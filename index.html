@@ -2,48 +2,76 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"> <!-- Ensure responsive viewport -->
   <title>Login for Attendance</title>
   <script src="https://accounts.google.com/gsi/client" async defer></script>
   
   <style>
     body {
       font-family: Arial, sans-serif;
-      max-width: 600px;
-      margin: 0 auto;
+      margin: 0;
       padding: 20px;
-      min-height: 100vh; /* Ensure full viewport height for vertical centering */
+      min-height: 100vh;
       display: flex;
       flex-direction: column;
-      justify-content: center; /* Center vertically */
-      align-items: center; /* Center horizontally at the body level */
+      justify-content: center;
+      align-items: center;
+      background-color: #f5f5f5; /* Light background for better readability */
     }
     h2 {
       color: #333;
       text-align: center;
-      margin-bottom: 20px; /* Add space below the title */
+      margin-bottom: 20px;
+      font-size: clamp(1.5rem, 4vw, 2.5rem); /* Auto-resize title for different screens */
     }
     #message {
       margin-top: 20px;
       color: #4CAF50; /* Green color for success */
-      font-size: 16px;
+      font-size: clamp(1rem, 3vw, 1.5rem); /* Auto-resize success message */
       font-weight: bold;
       text-align: center;
       display: none;
     }
     .error-message {
       color: #f44336; /* Red color for errors */
-      font-size: 16px;
+      font-size: clamp(1rem, 3vw, 1.5rem); /* Auto-resize error message */
       font-weight: bold;
       text-align: center;
       display: none;
     }
     #signInButton {
-      text-align: center; /* Center the button container */
-      width: 100%; /* Ensure full width for centering */
+      text-align: center;
+      width: 100%;
     }
     .g_id_signin {
-      display: inline-block; /* Allows centering of the button itself */
-      margin: 0 auto; /* Centers the button horizontally */
+      display: inline-block;
+      margin: 0 auto;
+      font-size: clamp(1rem, 3vw, 1.5rem); /* Auto-resize button text */
+    }
+
+    /* Media Queries for Specific Screen Sizes */
+    @media (max-width: 480px) {
+      body {
+        padding: 10px; /* Reduce padding on very small screens */
+      }
+      h2 {
+        margin-bottom: 15px; /* Adjust spacing on small screens */
+      }
+      #message, .error-message {
+        margin-top: 15px; /* Adjust spacing on small screens */
+      }
+    }
+
+    @media (min-width: 481px) and (max-width: 768px) {
+      body {
+        padding: 15px; /* Moderate padding for medium screens */
+      }
+    }
+
+    @media (min-width: 769px) {
+      body {
+        max-width: 600px; /* Maintain max width for larger screens */
+      }
     }
   </style>
 </head>
@@ -73,7 +101,7 @@
       const studentId = email.split('@')[0];
 
       if (domain !== 'ejc.edu.sg') {
-        alert('Please use your EJC Email (name@ejc.edu.sg)');
+        alert('Please use your school Gmail (name@ejc.edu.sg)');
         return;
       }
 
@@ -119,7 +147,7 @@
         // Handle the Webhook response
         if (data.message === "Workflow was started" || data.locationValid === true) {
           document.getElementById('message').style.display = 'block';
-          document.getElementById('message').textContent = "Your attendance is recorded. Thank you!";
+          document.getElementById('message').textContent = "Your attendance is captured. Thank you!";
           // Hide the Sign-In button after successful submission
           document.getElementById('signInButton').style.display = 'none';
         } else {
