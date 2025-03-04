@@ -4,6 +4,34 @@
   <meta charset="UTF-8">
   <title>Login for Attendance</title>
   <script src="https://accounts.google.com/gsi/client" async defer></script>
+  
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    h2 {
+      color: #333;
+      text-align: center;
+    }
+    #message {
+      margin-top: 20px;
+      color: #4CAF50; /* Green color for success */
+      font-size: 16px;
+      font-weight: bold;
+      text-align: center;
+      display: none;
+    }
+    .error-message {
+      color: #f44336; /* Red color for errors */
+      font-size: 16px;
+      font-weight: bold;
+      text-align: center;
+      display: none;
+    }
+  </style>
 </head>
 <body>
   <h2>Login for Attendance</h2>
@@ -14,11 +42,13 @@
   </div>
   <div class="g_id_signin" data-type="standard" data-size="large"></div>
 
-  <form id="attendanceForm" action="https://ictcomm.app.n8n.cloud/webhook/attendance-submit" method="POST" style="display:none;">
+  <div id="message" style="display:none;"></div>
+  <div id="errorMessage" class="error-message" style="display:none;"></div>
+
+  <form id="attendanceForm" style="display:none;">
     <input type="hidden" name="studentId" id="studentId">
     <input type="hidden" name="latitude" id="latitude">
     <input type="hidden" name="longitude" id="longitude">
-    <button type="submit">Submit Attendance</button>
   </form>
 
   <script>
@@ -29,26 +59,63 @@
       const studentId = email.split('@')[0];
 
       if (domain !== 'ejc.edu.sg') {
-        alert('Please use your school Gmail (name@ejc.edu.sg)');
+        alert('Please use your EJC Email (name@ejc.edu.sg)');
         return;
       }
 
+      // Fetch location using IP geolocation
       fetch('https://ipapi.co/json/')
         .then(response => response.json())
         .then(data => {
           const latitude = data.latitude;
           const longitude = data.longitude;
 
+          // Fill form fields
           document.getElementById('studentId').value = studentId;
           document.getElementById('latitude').value = latitude;
           document.getElementById('longitude').value = longitude;
 
-          document.getElementById('attendanceForm').submit();
+          // Submit form data asynchronously to n8n Webhook
+          submitAttendance(studentId, latitude, longitude);
         })
         .catch(error => {
-          alert('Could not determine location. Please try again.');
+          document.getElementById('errorMessage').style.display = 'block';
+          document.getElementById('errorMessage').textContent = 'Could not determine location. Please try again.';
           console.error('Error:', error);
         });
+    }
+
+    function submitAttendance(studentId, latitude, longitude) {
+      const webhookUrl = "https://ictcomm.app.n8n.cloud/webhook/attendance-submit";
+      const data = {
+        studentId: studentId,
+        latitude: latitude,
+        longitude: longitude
+      };
+
+      fetch(webhookUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(data)
+      })
+      .then(response => response.json())
+      .then(data => {
+        // Handle the Webhook response
+        if (data.message === "Workflow was started" || data.locationValid === true) {
+          document.getElementById('message').style.display = 'block';
+          document.getElementById('message').textContent = "Your attendance is captured. Thank you!";
+        } else {
+          document.getElementById('errorMessage').style.display = 'block';
+          document.getElementById('errorMessage').textContent = "Attendance could not be captured. Please try again.";
+        }
+      })
+      .catch(error => {
+        document.getElementById('errorMessage').style.display = 'block';
+        document.getElementById('errorMessage').textContent = "Error submitting attendance. Please try again.";
+        console.error('Error:', error);
+      });
     }
 
     function jwt_decode(token) {
