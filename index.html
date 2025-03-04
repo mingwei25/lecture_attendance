@@ -188,7 +188,7 @@
         // Handle the Webhook response
         if (data.message === "Workflow was started" || data.locationValid === true) {
           document.getElementById('message').style.display = 'block';
-          document.getElementById('message').textContent = "Your attendance is captured. Thank you!";
+          document.getElementById('message').textContent = "Your attendance is recorded. Thank you!";
           // Hide the Sign-In button after successful submission
           document.getElementById('signInButton').style.display = 'none';
         } else {
