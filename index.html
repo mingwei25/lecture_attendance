@@ -105,26 +105,67 @@
         return;
       }
 
-      // Fetch location using IP geolocation
-      fetch('https://ipapi.co/json/')
-        .then(response => response.json())
-        .then(data => {
-          const latitude = data.latitude;
-          const longitude = data.longitude;
+      // Try HTML5 Geolocation first (more precise, especially on mobile)
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+          position => {
+            const latitude = position.coords.latitude;
+            const longitude = position.coords.longitude;
 
-          // Fill form fields
-          document.getElementById('studentId').value = studentId;
-          document.getElementById('latitude').value = latitude;
-          document.getElementById('longitude').value = longitude;
+            // Fill form fields
+            document.getElementById('studentId').value = studentId;
+            document.getElementById('latitude').value = latitude;
+            document.getElementById('longitude').value = longitude;
 
-          // Submit form data asynchronously to n8n Webhook
-          submitAttendance(studentId, latitude, longitude);
-        })
-        .catch(error => {
-          document.getElementById('errorMessage').style.display = 'block';
-          document.getElementById('errorMessage').textContent = 'Could not determine location. Please try again.';
-          console.error('Error:', error);
-        });
+            // Submit form data asynchronously to n8n Webhook
+            submitAttendance(studentId, latitude, longitude);
+          },
+          error => {
+            // Fallback to IP geolocation if GPS fails
+            fetch('https://ipapi.co/json/')
+              .then(response => response.json())
+              .then(data => {
+                const latitude = data.latitude;
+                const longitude = data.longitude;
+
+                document.getElementById('studentId').value = studentId;
+                document.getElementById('latitude').value = latitude;
+                document.getElementById('longitude').value = longitude;
+
+                submitAttendance(studentId, latitude, longitude);
+              })
+              .catch(ipError => {
+                document.getElementById('errorMessage').style.display = 'block';
+                document.getElementById('errorMessage').textContent = 'Could not determine location. Please enable GPS or try again.';
+                console.error('Geolocation and IP errors:', error, ipError);
+              });
+          },
+          { 
+            enableHighAccuracy: true, 
+            timeout: 5000, 
+            maximumAge: 0 
+          } // Options for better accuracy and timeliness
+        );
+      } else {
+        // Fallback to IP geolocation if browser doesn’t support geolocation
+        fetch('https://ipapi.co/json/')
+          .then(response => response.json())
+          .then(data => {
+            const latitude = data.latitude;
+            const longitude = data.longitude;
+
+            document.getElementById('studentId').value = studentId;
+            document.getElementById('latitude').value = latitude;
+            document.getElementById('longitude').value = longitude;
+
+            submitAttendance(studentId, latitude, longitude);
+          })
+          .catch(error => {
+            document.getElementById('errorMessage').style.display = 'block';
+            document.getElementById('errorMessage').textContent = 'Could not determine location. Please try again.';
+            console.error('Error:', error);
+          });
+      }
     }
 
     function submitAttendance(studentId, latitude, longitude) {
@@ -147,7 +188,7 @@
         // Handle the Webhook response
         if (data.message === "Workflow was started" || data.locationValid === true) {
           document.getElementById('message').style.display = 'block';
-          document.getElementById('message').textContent = "Your attendance is recorded. Thank you!";
+          document.getElementById('message').textContent = "Your attendance is captured. Thank you!";
           // Hide the Sign-In button after successful submission
           document.getElementById('signInButton').style.display = 'none';
         } else {
