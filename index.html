@@ -11,10 +11,16 @@
       max-width: 600px;
       margin: 0 auto;
       padding: 20px;
+      min-height: 100vh; /* Ensure full viewport height for vertical centering */
+      display: flex;
+      flex-direction: column;
+      justify-content: center; /* Center vertically */
+      align-items: center; /* Center horizontally at the body level */
     }
     h2 {
       color: #333;
       text-align: center;
+      margin-bottom: 20px; /* Add space below the title */
     }
     #message {
       margin-top: 20px;
@@ -32,7 +38,8 @@
       display: none;
     }
     #signInButton {
-      text-align: center; /* Ensure the button container is centered */
+      text-align: center; /* Center the button container */
+      width: 100%; /* Ensure full width for centering */
     }
     .g_id_signin {
       display: inline-block; /* Allows centering of the button itself */
@@ -112,7 +119,7 @@
         // Handle the Webhook response
         if (data.message === "Workflow was started" || data.locationValid === true) {
           document.getElementById('message').style.display = 'block';
-          document.getElementById('message').textContent = "Your attendance is captured. Thank you!";
+          document.getElementById('message').textContent = "Your attendance is recorded. Thank you!";
           // Hide the Sign-In button after successful submission
           document.getElementById('signInButton').style.display = 'none';
         } else {
