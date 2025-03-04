@@ -31,6 +31,13 @@
       text-align: center;
       display: none;
     }
+    #signInButton {
+      text-align: center; /* Ensure the button container is centered */
+    }
+    .g_id_signin {
+      display: inline-block; /* Allows centering of the button itself */
+      margin: 0 auto; /* Centers the button horizontally */
+    }
   </style>
 </head>
 <body>
@@ -40,7 +47,7 @@
        data-callback="handleCredentialResponse"
        data-auto_prompt="false">
   </div>
-  <div class="g_id_signin" data-type="standard" data-size="large"></div>
+  <div id="signInButton" class="g_id_signin" data-type="standard" data-size="large"></div>
 
   <div id="message" style="display:none;"></div>
   <div id="errorMessage" class="error-message" style="display:none;"></div>
@@ -106,6 +113,8 @@
         if (data.message === "Workflow was started" || data.locationValid === true) {
           document.getElementById('message').style.display = 'block';
           document.getElementById('message').textContent = "Your attendance is captured. Thank you!";
+          // Hide the Sign-In button after successful submission
+          document.getElementById('signInButton').style.display = 'none';
         } else {
           document.getElementById('errorMessage').style.display = 'block';
           document.getElementById('errorMessage').textContent = "Attendance could not be captured. Please try again.";
