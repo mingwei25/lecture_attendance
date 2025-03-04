@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Login for Attendance</title>
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+</head>
+<body>
+  <h2>Login for Attendance</h2>
+  <div id="g_id_onload"
+       data-client_id="398671145033-6ihikre4dod31v8pnjogf3dvkcbg32tm.apps.googleusercontent.com"
+       data-callback="handleCredentialResponse"
+       data-auto_prompt="false">
+  </div>
+  <div class="g_id_signin" data-type="standard" data-size="large"></div>
+
+  <form id="attendanceForm" action="https://ictcomm.app.n8n.cloud/webhook/attendance-submit" method="POST" style="display:none;">
+    <input type="hidden" name="studentId" id="studentId">
+    <input type="hidden" name="latitude" id="latitude">
+    <input type="hidden" name="longitude" id="longitude">
+    <button type="submit">Submit Attendance</button>
+  </form>
+
+  <script>
+    function handleCredentialResponse(response) {
+      const decoded = jwt_decode(response.credential);
+      const email = decoded.email;
+      const domain = email.split('@')[1];
+      const studentId = email.split('@')[0];
+
+      if (domain !== 'ejc.edu.sg') {
+        alert('Please use your school Gmail (name@ejc.edu.sg)');
+        return;
+      }
+
+      fetch('https://ipapi.co/json/')
+        .then(response => response.json())
+        .then(data => {
+          const latitude = data.latitude;
+          const longitude = data.longitude;
+
+          document.getElementById('studentId').value = studentId;
+          document.getElementById('latitude').value = latitude;
+          document.getElementById('longitude').value = longitude;
+
+          document.getElementById('attendanceForm').submit();
+        })
+        .catch(error => {
+          alert('Could not determine location. Please try again.');
+          console.error('Error:', error);
+        });
+    }
+
+    function jwt_decode(token) {
+      const base64Url = token.split('.')[1];
+      const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+      const jsonPayload = decodeURIComponent(atob(base64).split('').map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)).join(''));
+      return JSON.parse(jsonPayload);
+    }
+  </script>
+</body>
+</html>
